@@ -38,6 +38,7 @@ import TypeChecker qualified as T
 -------------------------------------------------------------------------------------------------------------------------------------------------------
 -- Eval top level functions
 -------------------------------------------------------------------------------------------------------------------------------------------------------
+--TODO simplify this, dont need all of these top level functions
 evalText
   :: forall m. (Monad m)
   => EvalIO m
@@ -233,7 +234,6 @@ evalVar eio env ee = do
               Just env3 -> lookupVar env3 n
               Nothing -> do
                 throwE . E.EeUnboundVar Nothing $ "Unbound variable: `" <> n <> "`"
-
 -------------------------------------------------------------------------------------------------------------------------------------------------------
 
 
@@ -253,7 +253,7 @@ newEvalIO logger = do
          , eiLog = logger
          }
 
-  pure eio --TODO does not need a m Monad if not getting primitive functions here
+  pure eio
 
   where
     eiPrnErrorInCode' code err =
@@ -261,6 +261,8 @@ newEvalIO logger = do
 
 
 -- | Create a new EvalIO instance for testing
+-- This still uses IO even though its for testing
+-- Hedgehog lets use use IO for testing, so this is just simpler.
 newEvalIOMem :: (MonadUnliftIO m) => (Lg.Logger m) -> m (EvalIO m)
 newEvalIOMem logger = do
   hist <- liftIO $ newTVarIO (DL.empty :: DL.DList (Text, Text))

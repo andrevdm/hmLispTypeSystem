@@ -64,8 +64,7 @@ typeEnvFromPrimFns (L.PrimitiveFunctionTypes primFns) =
 -- Typed values
 -------------------------------------------------------------------------------------------------------------------------------------------------------
 data TypedLispVal
-  = TvNil !Pos
-  | TvAtom !Pos !L.LispType !Text
+  = TvAtom !Pos !L.LispType !Text
   | TvBool !Pos !Bool
   | TvDefine !Pos !L.PolyType !Text !TypedLispVal
   | TvDo !Pos !L.LispType ![TypedLispVal]
@@ -75,8 +74,8 @@ data TypedLispVal
   | TvLambda !Pos !L.LispType ![(Pos, Text)] ![TypedLispVal]
   | TvLet !Pos !L.LispType !L.LetStyle ![(Pos, Text, TypedLispVal)] ![TypedLispVal]
   | TvList !Pos !L.LispType ![TypedLispVal]
+  | TvNil !Pos
   | TvString !Pos !Text
-
   deriving (Show, Eq)
 
 

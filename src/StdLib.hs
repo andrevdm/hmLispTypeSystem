@@ -48,13 +48,13 @@ getPrimitiveFunctions eio = do
     , ("eq_string", (E.EvFunc $ eEqString, stringStringBool))
 
     , ( "prn"
-      , ( E.EvFunc $ ePrn
+      , ( E.EvFunc ePrn
         , L.PtMono $ L.TyFunc [L.TyString] L.TyNil
         )
       )
 
     , ( "identity"
-      , ( E.EvFunc $ eIdentity
+      , ( E.EvFunc eIdentity
         , L.PtForall ["a"] $ L.TyFunc [L.TyVar "a"] (L.TyVar "a")
         )
       )

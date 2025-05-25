@@ -26,8 +26,8 @@ data EvalEnv m = EvalEnv
 
 
 data EvalVar m
-  = EvNil
-  | EvBool !Bool
+  = EvBool !Bool
+  | EvDefine !Text !(EvalVar m)
   | EvDo ![EvalVar m]
   | EvFuncCall !(EvalVar m) ![(EvalVar m)]
   | EvFunction !(EvFunc m)
@@ -36,9 +36,9 @@ data EvalVar m
   | EvLambdaForm ![Text] ![EvalVar m]
   | EvLet L.LetStyle ![(Text, EvalVar m)] ![EvalVar m]
   | EvList ![EvalVar m]
+  | EvNil
   | EvString !Text
   | EvVar !Text
-  | EvDefine !Text !(EvalVar m)
   deriving (Eq, Show)
 
 
