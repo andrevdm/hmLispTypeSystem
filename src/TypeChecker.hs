@@ -588,11 +588,6 @@ applySubstitutions lt = do
     L.TyInt -> pure lt
     L.TyString -> pure lt
     L.TyBool -> pure lt
-    L.TyVar v -> do
-      st <- get
-      case Map.lookup v st.tsSubst of
-        Just lt2 -> applySubstitutions lt2
-        Nothing -> pure lt
 
     L.TyList lt1 -> do
       lt2 <- applySubstitutions lt1
@@ -603,6 +598,13 @@ applySubstitutions lt = do
 
       tret2 <- applySubstitutions tret
       pure $ L.TyFunc targs2 tret2
+
+    L.TyVar v -> do
+      st <- get
+      case Map.lookup v st.tsSubst of
+        Just lt2 -> applySubstitutions lt2
+        Nothing -> pure lt
+
 
 
 -- | Apply substitutions to a polytype
