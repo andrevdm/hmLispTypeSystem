@@ -13,6 +13,7 @@ module Repl
 import Verset
 import Control.Exception.Safe (throwString)
 import Data.Text qualified as Txt
+import Data.Text.IO qualified as Txt
 import Data.Map qualified as Map
 import System.Console.ANSI qualified as AN
 import System.Console.Haskeline qualified as Ln
@@ -48,13 +49,18 @@ replMain = do
   eio <- E.newEvalIO lg
   primFns <- Prm.getPrimitiveFunctions eio
 
-  -- Initial eval to get a type env
-  (tenv, eenv) <- E.evalText eio Nothing primFns "#t" >>= \case
+  -- Assuming that this exists in the current directory
+  -- Clearly a bad idea in a real program
+  stdLib <- Txt.readFile "stdLib.lisp"
+
+  -- Eval the standard library to add to the environment
+  -- This also gets us an initial type and eval environment
+  (tenv, eenv) <- E.evalText eio Nothing primFns stdLib >>= \case
     Right (tenv, _, eenv, _) -> pure (tenv, eenv)
     Left e -> do
       AN.setSGR [ AN.SetColor AN.Foreground AN.Vivid AN.Red ]
-      E.eiPrnErrorInCode (eio) "#t" e
-      throwString "Error in type checking"
+      E.eiPrnErrorInCode (eio) stdLib e
+      throwString "Error in standard library"
 
   let env = REnv
        { ePrintType = True
