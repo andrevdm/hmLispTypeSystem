@@ -20,8 +20,7 @@ import LispParser qualified as P
 
 
 data ResolvedLispVal
-  = RlNil !Pos
-  | RlAtom !Pos Text
+  = RlAtom !Pos Text
   | RlBool !Pos Bool
   | RlDefine !Pos !Text !ResolvedLispVal
   | RlDo !Pos ![ResolvedLispVal]
@@ -31,6 +30,7 @@ data ResolvedLispVal
   | RlLambda !Pos ![(Pos, Text)] ![ResolvedLispVal]
   | RlLet !Pos !L.LetStyle ![((Pos, Text), (Pos, ResolvedLispVal))] ![ResolvedLispVal]
   | RlList !Pos [ResolvedLispVal]
+  | RlNil !Pos
   | RlString !Pos Text
   deriving (Show, Eq)
 

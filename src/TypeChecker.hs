@@ -418,11 +418,15 @@ typeCheckVal' env1 rv = do
 
 
 -- | Instantiate a polymorphic type
--- Instantiate takes a polymorphic type (e.g., one with forall variables, `∀ a b. a -> b -> a`)
+-- Replaces each quantified variable in a polymorphic type  (e.g., one with forall variables, `∀ a b. a -> b -> a`)
 --  and replaces each quantified variable with a fresh type variable.
 --
--- Quantified variables: Are the variables that are bound by a forall in the type, in the example that is `a` and `b`.
--- Fresh type variables: A new type variable that is guaranteed to be unique and not already in use (bound)
+-- For monomorphic types (PtMono), it still recurses through the type to ensure uniform treatment and
+-- allow substitution of nested types.
+--
+--
+-- * Quantified variables: Are the variables that are bound by a forall in the type, in the example that is `a` and `b`.
+-- * Fresh type variables: A new type variable that is guaranteed to be unique and not already in use (bound)
 --
 -- Example
 --    `∀ a b. a -> b -> a` becomes `U0 -> U1 -> U0`
