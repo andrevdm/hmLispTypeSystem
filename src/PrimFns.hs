@@ -52,7 +52,13 @@ getPrimitiveFunctions eio = do
         , L.PtMono $ L.TyFunc [L.TyString] L.TyNil
         )
       )
-    ]
+    , ( "identity"
+      , ( E.EvFunc eIdentity
+        , L.PtForall ["a"] $ L.TyFunc [L.TyVar "a"] (L.TyVar "a")
+        )
+      )
+     ]
+
 
   where
     ePrn :: [E.EvalVar m] -> E.EvalEnv m -> ExceptT E.EvalError m (E.EvalVar m)
@@ -135,3 +141,10 @@ getPrimitiveFunctions eio = do
           pure . E.EvBool $ s1 == s2
         _ -> do
           throwE . E.EeRuntimeError Nothing $ "Wrong number of arguments calling == function: expected 2 arguments, got: " <> show (length args)
+
+    eIdentity :: [E.EvalVar m] -> E.EvalEnv m -> ExceptT E.EvalError m (E.EvalVar m)
+    eIdentity args _eenv = do
+      case args of
+        [v] -> pure v
+        _ -> do
+          throwE . E.EeRuntimeError Nothing $ "identity: wrong number of arguments calling identity: expected 1 argument, got: " <> show (length args)
