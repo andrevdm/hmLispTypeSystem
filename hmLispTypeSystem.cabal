@@ -1,0 +1,123 @@
+cabal-version: 3.4
+name: hmLispTypeSystem
+version: 0.0.0.1
+-- synopsis:
+-- description:
+license: MIT
+license-file: LICENSE
+author: Andre
+maintainer: andre@andrevdm.com
+copyright: 2025 Andre Van Der Merwe
+category: None
+build-type: Simple
+extra-source-files: README.md
+common common-options
+  build-depends:
+    base >= 4.20 && <5
+  default-language:
+    GHC2024
+
+common common-ghc-options-ide
+  ghc-options: -fwrite-ide-info -hiedir=.hie
+
+common common-ghc-options
+  ghc-options: -Wall -Wimplicit-prelude -Wincomplete-uni-patterns -Wincomplete-record-updates -Wcompat -Wredundant-constraints -Wnoncanonical-monad-instances -Widentities -fhide-source-paths -Wpartial-fields -fhide-source-paths -freverse-errors -Werror=incomplete-patterns
+
+library
+  import: common-options
+  import: common-ghc-options
+  import: common-ghc-options-ide
+
+  hs-source-dirs: src
+  default-language: GHC2024
+  exposed-modules:
+    App,
+    Eval.Eval,
+    Eval.Evaluator,
+    Eval.Lower,
+    Lisp,
+    LispParser,
+    Logging,
+    Printer.Colours,
+    Printer.Print,
+    Printer.PrintError,
+    Printer.PrintEval,
+    Printer.PrintType,
+    Printer.PrintTypedVal,
+    Repl,
+    Resolver,
+    StdLib,
+    TypeChecker,
+  other-modules:
+    Paths_hmLispTypeSystem
+  build-depends:
+    base >= 4.20 && < 5,
+    verset >= 0.0.1.11,
+    ansi-terminal,
+    bytestring,
+    containers,
+    colour,
+    dlist,
+    directory,
+    filepath,
+    haskeline,
+    megaparsec >= 9.6,
+    mtl,
+    ordered-containers,
+    parser-combinators >= 1.3.0,
+    prettyprinter,
+    prettyprinter-ansi-terminal,
+    pretty-simple,
+    raw-strings-qq,
+    safe-exceptions,
+    stm,
+    text,
+    time,
+    transformers,
+    unliftio,
+    unliftio-core,
+    vector
+
+
+
+executable hmLispTypeSystem-exe
+  import: common-options
+  import: common-ghc-options
+  import: common-ghc-options-ide
+  ghc-options: -threaded
+  default-language: GHC2024
+  hs-source-dirs: app
+  main-is: Main.hs
+  build-depends:
+    base,
+    verset,
+    hmLispTypeSystem
+
+
+test-suite hsLisp2-test
+  import: common-options
+  import: common-ghc-options
+  import: common-ghc-options-ide
+
+  ghc-options: -threaded
+  default-language: GHC2024
+  type: exitcode-stdio-1.0
+  hs-source-dirs: test
+  main-is: Tests.hs
+  build-depends:
+    base,
+    hmLispTypeSystem,
+    verset,
+    bytestring,
+    containers,
+    hedgehog,
+    mtl,
+    transformers,
+    random,
+    raw-strings-qq,
+    text,
+  other-modules:
+    EvalTests,
+    ParserTests,
+    ResolverTests,
+    TypeCheckerTests,
