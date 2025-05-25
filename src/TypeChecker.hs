@@ -294,10 +294,12 @@ typeCheckVal' env1 rv = do
     typeCheckDo pos vs = do
       -- Type check all expressions in the do block.
       (env2, vs2) <- foldTypeCheckVals env1 vs
+
       -- The type of the block is the type of the last expression or nil if empty.
       let lastType = case reverse vs2 of
             [] -> L.TyNil
             (x:_) -> getValType x
+
       pure (env2, TvDo pos lastType vs2)
 
 
@@ -390,7 +392,7 @@ typeCheckVal' env1 rv = do
     typeCheckList pos vs =
       case vs of
         -- An empty list can have any element type. Create a fresh type variable for the element type.
-        -- Note that nil and the empty list `()` are not synonymous in this system (the mostly are in lisps).
+        -- Note that nil and the empty list `()` are not synonymous in this system (in most lisps they are).
         [] -> do
           u <- nextTypeVar
           pure (env1, TvList pos (L.TyList $ L.TyVar u) [])
@@ -771,9 +773,9 @@ typeVarPrefix = "U"
 -- See `instantiate` for more details on how this is used.
 nextTypeVar :: (Monad a) => StateT TcState a Text
 nextTypeVar = do
+  modify' $ \st -> st { tsTypeVarCounter = st.tsTypeVarCounter + 1 }
   st <- get
   let c = st.tsTypeVarCounter
-  put $ st { tsTypeVarCounter = c + 1 }
   pure $ typeVarPrefix <> show c
 -------------------------------------------------------------------------------------------------------------------------------------------------------
 
