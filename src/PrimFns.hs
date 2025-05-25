@@ -6,7 +6,7 @@
 {-# LANGUAGE ApplicativeDo #-}
 {-# LANGUAGE MultiWayIf #-}
 
-module StdLib
+module PrimFns
     ( getPrimitiveFunctions
     ) where
 

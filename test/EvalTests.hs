@@ -18,9 +18,9 @@ import Hedgehog
 
 import Eval.Eval as E
 import Eval.Evaluator as E
-import StdLib qualified as Std
 import Lisp qualified as L
 import Logging qualified as Lg
+import PrimFns qualified as Prm
 import Printer.PrintEval qualified as Pr
 import Text.RawString.QQ (r)
 
@@ -217,7 +217,7 @@ evalTests =
       annotate . Txt.unpack $ t
 
       eio <- liftIO $ E.newEvalIOMem Lg.nopLogger
-      primFns <- liftIO $ Std.getPrimitiveFunctions eio
+      primFns <- liftIO $ Prm.getPrimitiveFunctions eio
       eres' <- liftIO $ E.evalText eio Nothing primFns t
 
       annotate $ "Test " <> Txt.unpack name

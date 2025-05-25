@@ -46,7 +46,7 @@ library
     Printer.PrintTypedVal,
     Repl,
     Resolver,
-    StdLib,
+    PrimFns,
     TypeChecker,
   other-modules:
     Paths_hmLispTypeSystem

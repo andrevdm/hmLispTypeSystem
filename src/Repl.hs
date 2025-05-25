@@ -24,7 +24,7 @@ import Logging qualified as Lg
 import TypeChecker qualified as T
 import Printer.PrintEval qualified as Pr
 import Printer.PrintType qualified as Pr
-import StdLib qualified as Std
+import PrimFns qualified as Prm
 
 
 data REnv = REnv
@@ -46,7 +46,7 @@ replMain = do
 
   lg <- Lg.termLogger
   eio <- E.newEvalIO lg
-  primFns <- Std.getPrimitiveFunctions eio
+  primFns <- Prm.getPrimitiveFunctions eio
 
   -- Initial eval to get a type env
   (tenv, eenv) <- E.evalText eio Nothing primFns "#t" >>= \case
