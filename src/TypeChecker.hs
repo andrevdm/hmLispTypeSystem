@@ -22,7 +22,7 @@ module TypeChecker
 
 import Verset
 import Control.Monad.Trans.Except (ExceptT, Except, runExcept, throwE)
-import Control.Monad.Trans.State.Strict (StateT, evalStateT, get, put, modify')
+import Control.Monad.Trans.State.Strict (StateT, evalStateT, get, modify', state)
 import Data.Set qualified as Set
 import Data.Text qualified as Txt
 import Data.Map.Strict qualified as Map
@@ -363,7 +363,8 @@ typeCheckVal' env1 rv = do
 
       -- Unify the type of the function value with a function type: (argTypes -> retType).
       -- This means the value being called must be a function taking the argument types and returning the return type.
-      -- I.e. the thing we are calling is actually a function with the expected arguments and return type.
+      -- I.e. the value being called is a function whose type unifies with a function type constructed from the argument
+      -- types and a fresh return type variable.
       unify (L.getPos funcVal, getValType funcVal) (pos, L.TyFunc argTypes retType)
 
       -- After unification, apply substitutions to get the final (possibly concrete) return type.
@@ -431,7 +432,7 @@ typeCheckVal' env1 rv = do
 -- * Fresh type variables: A new type variable that is guaranteed to be unique and not already in use (bound)
 --
 -- Example
---    `∀ a b. a -> b -> a` becomes `U0 -> U1 -> U0`
+--    `∀ a b. a -> b -> a` becomes `∀ U0 U1. U0 -> U1 -> U0`
 --
 -- This ensures that each use of a polymorphic value remains independent in type inference
 --  Just because the user used the same name for a type variable in different places, does NOT mean they represent the same type.
@@ -534,7 +535,7 @@ unify (lhsPos, lhs1) (rhsPos, rhs1) = do
 
 
 -- | Bind a variable to a type
--- This is done during type unification as part of the type inference process.
+-- This is done during unification.
 bindVar :: Pos -> Text -> L.LispType -> StateT TcState (Except TypeError) ()
 bindVar pos name lt
   -- If trying to bind a type variable to itself, do nothing.
@@ -714,8 +715,8 @@ generalise env t =
   in
   -- 4. If there are no variables to generalise, return a monomorphic type.
   if null toGen
-  then L.PtMono t
-  else L.PtForall toGen t
+    then L.PtMono t
+    else L.PtForall toGen t
 
 
 -- | Recursively look up a type in the environment
@@ -741,7 +742,7 @@ getMonoType (L.PtForall _ t) = t
 freeTypeVars :: L.LispType -> Set Text
 freeTypeVars (L.TyVar v) = Set.singleton v
 freeTypeVars (L.TyList t) = freeTypeVars t
-freeTypeVars (L.TyFunc args ret) = Set.unions (freeTypeVars ret : (freeTypeVars <$> args))
+freeTypeVars (L.TyFunc args ret) = Set.unions $ freeTypeVars ret : (freeTypeVars <$> args)
 freeTypeVars L.TyNil = Set.empty
 freeTypeVars L.TyInt = Set.empty
 freeTypeVars L.TyString = Set.empty
@@ -758,10 +759,11 @@ freeTypeVarsInPoly (L.PtForall vs t) = freeTypeVars t `Set.difference` Set.fromL
 -- | traverses the environment hierarchy and accumulates free type variables
 freeTypeVarsEnv :: TypeEnv -> Set Text
 freeTypeVarsEnv env =
-  let parent = maybe Set.empty freeTypeVarsEnv env.teParent
-      varsInThis = Map.foldr (\pt acc -> Set.union (freeTypeVarsInPoly pt) acc) Set.empty env.teTypes
+  let
+    freeParents = fromMaybe mempty (freeTypeVarsEnv <$> env.teParent)
+    freeInThis = freeTypeVarsInPoly <$> (Map.elems env.teTypes)
   in
-  Set.union varsInThis parent
+  Set.unions (freeParents : freeInThis)
 
 
 -- | Prefix we want to use for fresh type variables
@@ -773,12 +775,13 @@ typeVarPrefix = "U"
 
 -- | Get a unique fresh type variable
 -- See `instantiate` for more details on how this is used.
-nextTypeVar :: (Monad a) => StateT TcState a Text
-nextTypeVar = do
-  modify' $ \st -> st { tsTypeVarCounter = st.tsTypeVarCounter + 1 }
-  st <- get
-  let c = st.tsTypeVarCounter
-  pure $ typeVarPrefix <> show c
+nextTypeVar :: (Monad m) => StateT TcState m Text
+nextTypeVar =
+  state $ \st ->
+    let c' = tsTypeVarCounter st + 1
+        name = typeVarPrefix <> show c'
+        st' = st { tsTypeVarCounter = c' }
+    in (name, st')
 -------------------------------------------------------------------------------------------------------------------------------------------------------
 
 

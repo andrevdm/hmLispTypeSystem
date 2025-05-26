@@ -80,7 +80,7 @@ ppPolyType lv =
     L.PtMono t -> ppType t
     L.PtForall vars' typ' ->
       let
-        vars = hsep $ paVar <$> vars'
+        vars = hsep $ paVar <$> sort vars'
         typ = ppType typ'
       in
       hsep
