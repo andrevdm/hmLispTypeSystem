@@ -66,9 +66,9 @@ evalText' eio eenv1 tenv1 primFns txt = runExceptT $ do
   (eenv2, eres) <- ExceptT $ eval eio eenv1 primFns tvs
 
   let lastType =
-       case reverse tvs of
-         [] -> T.TvNil L.noPos
-         (t:_) -> t
+       case lastMay tvs of
+         Nothing -> T.TvNil L.noPos
+         Just t -> t
 
   pure (tenv2, lastType, eenv2, eres)
 

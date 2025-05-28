@@ -281,9 +281,9 @@ typeCheckVal' env1 rv = do
 
       -- Get the return type of the lambda by looking at the last expression in the body.
       -- Apply substitutions to get the fully resolved type.
-      retType <- case reverse body2 of
-        []   -> pure L.TyNil
-        (l:_) -> applySubstitutions (getValType l)
+      retType <- case lastMay body2 of
+        Nothing -> pure L.TyNil
+        Just l -> applySubstitutions (getValType l)
 
       -- Construct the final function type for the lambda.
       let lambdaType = L.TyFunc params3 retType
@@ -296,9 +296,9 @@ typeCheckVal' env1 rv = do
       (env2, vs2) <- foldTypeCheckVals env1 vs
 
       -- The type of the block is the type of the last expression or nil if empty.
-      let lastType = case reverse vs2 of
-            [] -> L.TyNil
-            (x:_) -> getValType x
+      let lastType = case lastMay vs2 of
+            Nothing -> L.TyNil
+            Just x -> getValType x
 
       pure (env2, TvDo pos lastType vs2)
 
@@ -330,9 +330,9 @@ typeCheckVal' env1 rv = do
 
       -- Type check the let body in the new environment to get its final type.
       (_, body2') <- foldTypeCheckVals env2' body1
-      let lastType = case reverse body2' of
-            [] -> L.TyNil
-            (x:_) -> getValType x
+      let lastType = case lastMay body2' of
+            Nothing -> L.TyNil
+            Just x -> getValType x
 
       -- Return the original environment, because let bindings are not visible outside the let.
       pure (env1, TvLet pos lastType style bindings2' body2')
